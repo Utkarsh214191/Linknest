@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinkNest — keep your campus links from getting lost</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="brand">
+      <span class="brand-mark">&#8226;</span>
+      <span class="brand-name">LinkNest</span>
+    </div>
+    <h1>Every link your batch shares, kept somewhere it won't get buried in WhatsApp.</h1>
+    <p class="hero-sub">Paste a notes folder, a PYQ drive, a group form — get back a short link, a QR code, and a running count of who actually opened it. Nests expire after 30 days, so the list never turns into a graveyard of dead links.</p>
+  </div>
+</header>
+
+<main class="content">
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash">
+        {% for m in messages %}<p>{{ m }}</p>{% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="create-card">
+    <h2>Add a link to the nest</h2>
+    <form action="{{ url_for('create_link') }}" method="POST" class="create-form">
+      <div class="field field-wide">
+        <label for="long_url">Link to shorten</label>
+        <input type="text" id="long_url" name="long_url" placeholder="https://drive.google.com/..." required>
+      </div>
+      <div class="field">
+        <label for="label">What is it? <span class="optional">(optional)</span></label>
+        <input type="text" id="label" name="label" placeholder="DBMS unit 3 notes">
+      </div>
+      <div class="field">
+        <label for="custom_code">Custom short code <span class="optional">(optional)</span></label>
+        <input type="text" id="custom_code" name="custom_code" placeholder="dbms-notes">
+      </div>
+      <button type="submit" class="btn-primary">Create short link</button>
+    </form>
+  </section>
+
+  <section class="stats-strip">
+    <div class="stat"><span class="stat-num">{{ links|length }}</span><span class="stat-label">active links</span></div>
+    <div class="stat"><span class="stat-num">{{ total_clicks }}</span><span class="stat-label">total opens</span></div>
+    <div class="stat"><span class="stat-num">{{ expired_count }}</span><span class="stat-label">expired &amp; cleared</span></div>
+  </section>
+
+  <section class="links-section">
+    <h2>In the nest</h2>
+
+    {% if links %}
+    <div class="links-table">
+      <div class="links-row links-head">
+        <span>Link</span>
+        <span>Short code</span>
+        <span>Opens</span>
+        <span>Expires in</span>
+        <span>QR</span>
+      </div>
+      {% for link in links %}
+      <div class="links-row">
+        <div class="link-info">
+          <span class="link-label">{{ link.label }}</span>
+          <span class="link-url">{{ link.long_url }}</span>
+        </div>
+        <a class="link-code" href="/{{ link.code }}" target="_blank">/{{ link.code }}</a>
+        <span class="link-clicks">{{ link.click_count }}</span>
+        <span class="link-expiry">{{ link.days_left }}d</span>
+        <a class="link-qr" href="/qr/{{ link.code }}.png" target="_blank" title="View QR code">&#9633;</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>The nest is empty. Add your first link above — a notes drive, a form link, anything your batch keeps losing.</p>
+    </div>
+    {% endif %}
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>LinkNest &mdash; built as an original take on a URL shortener, for campus resource sharing.</p>
+</footer>
+
+</body>
+</html>
